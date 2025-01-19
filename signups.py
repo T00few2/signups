@@ -26,8 +26,9 @@ data = pd.DataFrame(data)
 
 data['zwiftID'] = 'https://zwiftpower.com/profile.php?z=' + data['zwiftID']
 
-data = data[['displayName','phenotypeValue','currentRating','max30Rating','max90Rating','zwiftID']]
-data.columns = ['Navn','Ryttertype','vELO','30d vELO','90d vELO','zwiftID']
+data = data[['group','displayName','phenotypeValue','currentRating','max30Rating','max90Rating','zwiftID']]
+data.columns = ['Pen','Navn','Ryttertype','vELO','30d vELO','90d vELO','zwiftID']
+
 # Display data in Streamlit
 st.dataframe(
     data,
