@@ -11,11 +11,8 @@ if not firebase_admin._apps:  # Prevent reinitialization in Streamlit
         cred, {"databaseURL": f"https://{st.secrets['firebase']['project_id']}.firebaseio.com"}
     )
 
-
 # Firestore instance
 admin_db = firestore.client()
-
-st.title("Firebase Firestore with Streamlit")
 
 # Example: Fetch data from a Firestore collection
 collection_name = "raceSignups"
@@ -27,5 +24,18 @@ for doc in docs:
     
 data = pd.DataFrame(data)
 
+data['zwiftID'] = 'https://zwiftpower.com/profile.php?z=' + data['zwiftID']
+
+data = data[['displayName','phenotypeValue','currentRating','max30Rating','max90Rating','zwiftID']]
+data.columns = ['Navn','Ryttertype','vELO','30d vELO','90d vELO','zwiftID']
 # Display data in Streamlit
-st.write("Data from Firestore:", data)
+st.dataframe(
+    data,
+    hide_index=True,
+    column_config={
+        'zwiftID': st.column_config.LinkColumn('ZP profile', display_text='ZwiftPower'),
+        'vELO': st.column_config.NumberColumn(format='%d', help='Current vELO rating'),
+        '30d vELO': st.column_config.NumberColumn(format='%d', help='30 days max vELO rating'),
+        '90d vELO': st.column_config.NumberColumn(format='%d', help='90 days max vELO rating'),
+    
+    })
