@@ -39,8 +39,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.dataframe(data)
-
 # Display the DataFrame
 st.dataframe(
     data,
