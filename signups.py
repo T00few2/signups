@@ -26,19 +26,6 @@ data['zwiftID'] = 'https://zwiftpower.com/profile.php?z=' + data['zwiftID'].asty
 data = data[['group', 'displayName', 'phenotypeValue', 'currentRating', 'max30Rating', 'max90Rating', 'zwiftID']]
 data.columns = ['Pen', 'Navn', 'Ryttertype', 'vELO', '30d vELO', '90d vELO', 'zwiftID']
 
-# Inject custom CSS to set text color to white
-st.markdown(
-    """
-    <style>
-    /* Change text color in all tables */
-    table, th, td {
-        color: white !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # Display the DataFrame
 st.dataframe(
     data,
