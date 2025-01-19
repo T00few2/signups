@@ -3,7 +3,7 @@ import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Initialize Firebase Admin
+# Initialize Firebase Admin with Debugging
 if not firebase_admin._apps:
     try:
         cred = credentials.Certificate(dict(st.secrets["firebase"]))
@@ -16,13 +16,15 @@ if not firebase_admin._apps:
 else:
     st.info("Firebase already initialized.")
 
-# Firestore instance
+# Firestore instance with Error Handling
 try:
     admin_db = firestore.client()
+    st.success("Firestore client created successfully.")
 except Exception as e:
     st.error(f"Failed to create Firestore client: {e}")
+    st.stop()  # Stop execution if Firestore client fails
 
-# Fetch data from Firestore
+# Fetch data from Firestore with Debugging
 collection_name = "raceSignups"
 try:
     docs = admin_db.collection(collection_name).stream()
@@ -30,57 +32,65 @@ try:
     st.write(f"Number of documents fetched: {len(data)}")
 except Exception as e:
     st.error(f"Error fetching documents: {e}")
+    st.stop()
 
-# Create DataFrame
+# Create DataFrame and Display Raw Data
 if data:
     df = pd.DataFrame(data)
     st.write("Data fetched from Firestore:", df)
 else:
     st.warning("No data found in Firestore collection.")
+    st.stop()
 
-# Validate columns
+# Validate Columns
 expected_columns = ['group', 'displayName', 'phenotypeValue', 'currentRating', 'max30Rating', 'max90Rating', 'zwiftID']
 missing_columns = [col for col in expected_columns if col not in df.columns]
 
 if missing_columns:
     st.error(f"Missing columns in data: {missing_columns}")
+    st.stop()
 else:
     st.success("All expected columns are present.")
 
-# Transform 'zwiftID' column
+# Transform 'zwiftID' Column
 try:
     df['zwiftID'] = 'https://zwiftpower.com/profile.php?z=' + df['zwiftID'].astype(str)
     st.success("zwiftID column transformed successfully.")
 except Exception as e:
     st.error(f"Error transforming 'zwiftID' column: {e}")
+    st.stop()
 
-# Select and rename columns
+# Select and Rename Columns
 try:
     df = df[['group', 'displayName', 'phenotypeValue', 'currentRating', 'max30Rating', 'max90Rating', 'zwiftID']]
     df.columns = ['Pen', 'Navn', 'Ryttertype', 'vELO', '30d vELO', '90d vELO', 'zwiftID']
     st.write("Final DataFrame:", df)
 except Exception as e:
     st.error(f"Error selecting or renaming columns: {e}")
+    st.stop()
 
-# Check for valid URLs
+# Validate URLs
 invalid_urls = df[~df['zwiftID'].str.startswith('https://zwiftpower.com/profile.php?z=')]
 if not invalid_urls.empty:
     st.warning("Some zwiftID entries do not form valid URLs.")
 
-# Display DataFrame
-if not df.empty:
-    try:
-        st.dataframe(
-            df,
-            hide_index=True,
-            column_config={
-                'zwiftID': st.column_config.LinkColumn('ZP profile', display_text='ZwiftPower'),
-                'vELO': st.column_config.NumberColumn(format='%d', help='Current vELO rating'),
-                '30d vELO': st.column_config.NumberColumn(format='%d', help='30 days max vELO rating'),
-                '90d vELO': st.column_config.NumberColumn(format='%d', help='90 days max vELO rating'),
-            }
-        )
-    except Exception as e:
-        st.error(f"Error displaying DataFrame: {e}")
-else:
-    st.warning("Final DataFrame is empty.")
+# Display DataFrame with Column Configurations
+try:
+    st.dataframe(
+        df,
+        hide_index=True,
+        column_config={
+            'zwiftID': st.column_config.LinkColumn("ZP profile", display_text="ZwiftPower"),
+            'vELO': st.column_config.NumberColumn(format="%d", help="Current vELO rating"),
+            '30d vELO': st.column_config.NumberColumn(format="%d", help="30 days max vELO rating"),
+            '90d vELO': st.column_config.NumberColumn(format="%d", help="90 days max vELO rating"),
+        }
+    )
+except Exception as e:
+    st.error(f"Error displaying DataFrame with column configurations: {e}")
+    st.stop()
+
+# Optional: Alternative Display Methods
+# Uncomment to try different display methods
+st.table(df)
+st.write(df)
